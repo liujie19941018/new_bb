@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>table模块</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script type="text/javascript" src="jquery.js"></script>
+    <link href="animate.css-master/animate.css-master/animate.min.css" rel="stylesheet" type="text/css">
+</head>
+<body >
+<div class="demoTable" style="color: #009688">
+    搜索ID：
+    <div class="layui-inline">
+        <input class="layui-input" name="id" id="demoReload" autocomplete="off">
+    </div>
+    <button class="layui-btn " data-type="search" >查询</button>
+    <button class="layui-btn " data-type="reload" >刷新</button>
+</div>
+<table class="layui-hide" id="demo" lay-filter="demo"  class="animated zoomIn"></table>
+<script type="text/javascript" src="layui/layui.js"></script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            , height: 535
+            , url: 'hello'
+            , toolbar: 'default'
+            , title: '用户登记'
+            , skin: 'line,row'
+            , size: 'lg'
+            , loading: true
+            , autoSort:true
+            , cols: [[ //表头
+                {field: 'score', type: 'radio', fixed: 'left'}
+                , {field: 'id', title: 'ID' , align:'center', sort: true}
+                , {field: 'name', title: '用户名' , align:'center', sort: true}
+                , {field: 'age', title: '年龄', align:'center'}
+                , {field: 'sex', title: '性别' , align:'center', sort: true}
+            ]]
+            , page: true //开启分页
+            , limits: [5, 10, 20, 50, 100]
+            , limit: 10
+            , id: 'testReload'
+        });
+        var $ = layui.$, active = {
+            search: function () {
+                var demoReload = $('#demoReload');
+                var loadindex=layer.load(1);
+                $(function(){
+                    layer.close(loadindex);
+                });
+                //执行重载
+                table.reload('testReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+
+                        id: demoReload.val()
+
+                    }
+                });
+            },
+            reload: function () {
+                var loadindex=layer.load(1);
+                $(function(){
+                    layer.close(loadindex);
+                });
+                table.reload('testReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        id: ""
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        table.on('rowDouble(demo)', function (obj) {
+            var data = obj.data;
+            /*layer.alert(JSON.stringify(data), {
+                title: '当前行数据：'
+            });*/
+            layer.open({
+                type: 1
+                ,
+                title: false //不显示标题栏
+                ,
+                closeBtn: true
+                ,
+                area: '500px;'
+                ,
+                shade: 0.6
+                ,
+                id: 'LAY_layuipro' //设定一个id，防止重复弹出
+                ,
+                btn: ['确定', '取消']
+                ,
+                btnAlign: 'c'
+                ,
+                moveType: 1 //拖拽模式，0或者1
+                ,
+                content: '<div style="padding: 50px;zoom: 150%; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">' +
+                    '<p>' +
+                    '<span>编号：<input type="text" readonly="readonly" value="' + data.id + '"></span></p>' +
+                    '<p><span>姓名：<input type="text" value="' + data.name + '"></span>' +
+                    '</p>' +
+                    '<p>' +
+                    '<span>性别：<span class="layui-input-inline">' +
+                    '<select name="quiz3" id="select1" >' +
+                    '<option value="" style="background: #009688">请选择性别</option>'+
+                    '<option value="男">男</option>' +
+                    '<option value="女">女</option>' +
+                    '</select>' +
+                    '</span>' +
+                    '</span>' +
+                    '<p><span>年龄：<input type="text" value="' + data.age + '"></span></p>' +
+                    '</p>' +
+                    '</div>'
+                ,
+                success: function (layero) {
+                    var loadindex=layer.load(1);
+                    $(function(){
+                        layer.close(loadindex);
+                        if (data.sex == "男") {
+                            $("#select1").val("男");
+                        }else if (data.sex =="女"){
+                            $("#select1").val("女");
+                        }
+                    });
+                    var btn = layero.find('.layui-layer-btn');
+                    btn.find('.layui-layer-btn0').attr({
+                        href: 'http://www.layui.com/'
+                        , target: '_blank'
+                    });
+                }
+            });
+            //标注选中样式
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+        });
+
+        table.on('toolbar(demo)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id),
+                data = checkStatus.data; //获取选中的数据
+            switch (obj.event) {
+                case 'add':
+                    layer.msg('添加');
+                    break;
+                case 'update':
+                    if (data.length === 0) {
+                        layer.msg('请选择一行');
+                    } else if (data.length > 1) {
+                        layer.msg('只能同时编辑一个');
+                    } else {
+                        var user = checkStatus.data[0]
+                        layer.alert(JSON.stringify(user));
+
+                    }
+                    break;
+                case 'delete':
+                    if (data.length === 0) {
+                        layer.msg('请选择一行');
+                    } else {
+                        layer.msg('删除成功！');
+                    }
+                    break;
+            }
+            ;
+        });
+
+        $(document).on("click", ".layui-table-body table.layui-table tbody tr", function () {
+            /*当单击表格行时,把单选按钮设为选中状态*/
+            var tableDiv;
+            var index = $(this).attr('data-index');
+            var tableBox = $(this).parents('.layui-table-box');
+            //存在固定列
+            if (tableBox.find(".layui-table-fixed.layui-table-fixed-l").length > 0) {
+                tableDiv = tableBox.find(".layui-table-fixed.layui-table-fixed-l");
+            } else {
+                tableDiv = tableBox.find(".layui-table-body.layui-table-main");
+            }
+            var checkCell = tableDiv.find("tr[data-index=" + index + "]").find("td div.layui-table-cell div.layui-form-radio I");
+            if (checkCell.length > 0) {
+                checkCell.click();
+            }
+        });
+
+        //对td的单击事件进行拦截停止，防止事件冒泡再次触发上述的单击事件  将此代码在页面初始化后执行一次即可以。
+        $(document).on("click", "td div.layui-table-cell div.layui-form-radio", function (e) {
+            e.stopPropagation();
+        });
+
+
+    });
+</script>
+</body>
+</html>

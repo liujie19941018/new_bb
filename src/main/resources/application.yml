@@ -1,0 +1,21 @@
+
+spring:
+ datasource:
+   driver-class-name: oracle.jdbc.OracleDriver
+   url: jdbc:oracle:thin:@localhost:1521:orcl
+   username: scott
+   password: 123456
+ thymeleaf:
+   prefix:
+     classpath: /templates   # 访问template下的html文件需要配置模板，映射
+   cache: false # 开发时关闭缓存,不然没法看到实时页面
+mybatis:
+  type-aliases-package: com.example.demo.dao
+server:
+  port: 8080
+
+
+
+
+
+
